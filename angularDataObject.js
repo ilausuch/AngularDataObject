@@ -6,27 +6,32 @@
 * Copyright (c) 2015 Ivan Lausuch <ilausuch@gmail.com>
 **/
 
+function ADO_hasProperty(obj,name){
+	return Object.prototype.hasOwnProperty.call(obj,name);
+}
 
 function ADO_buildProperty(obj, name) {
-	Object.defineProperty(obj, name, {
-       get: function() { return this.get(name); },
-       set: function(value) {return this.set(name, value);}
-    });
+	if (!ADO_hasProperty(obj,name))
+		Object.defineProperty(obj, name, {
+	       get: function() { return this.get(name); },
+	       set: function(value) {return this.set(name, value);}
+	    });
 }
 
 function ADO_buildReadOnlyProperty(obj, name) {
-	Object.defineProperty(obj, name, {
-       get: function() { return this.get(name); }
-    });
+	if (!ADO_hasProperty(obj,name))
+		Object.defineProperty(obj, name, {
+	       get: function() { return this.get(name); }
+	    });
 }
 
 
 //--------------------------------------------------------------------------------
 // objectPrototipe
 //--------------------------------------------------------------------------------
-function ADO_ObjectPrototype(data,factory,table){
+function ADO_ObjectPrototype(data,factory,table,query){
 	this.$data={};
-	this.$special={table:table};
+	this.$special={table:table,query:query};
 	this.$navigation={};
 	this.$changes={};
 	this.$hasChanges=false;
@@ -59,9 +64,16 @@ function ADO_ObjectPrototype(data,factory,table){
 	this.print=function(){
 		console.info(this.$data);
 	}
+	
+	/**
+	Reload	
+	*/
+	this.refreshObject=function(config){
+		this.$factory.refreshObject(this,config);
+	}
 		
 	/**
-	Update this object
+	Save this object
 	*/
 	this.save=function(config){
 		this.$factory.saveObject(this,config);
@@ -111,6 +123,7 @@ function ADO_oData_factory($http,ServiceRoot){
 	this.ServiceRoot=ServiceRoot;
 	this.$http=$http;
 
+
 	/**
 	(internal) Register a new object
 	*/
@@ -153,7 +166,15 @@ function ADO_oData_factory($http,ServiceRoot){
 	*/
 	this._prepareRequest=function(url,method,data,table){
 		data = data || null;
-
+		
+		var headers={
+				"Content-Type": "application/json", 
+				Accept: "application/json;odata=fullmetadata"
+		};
+		
+		if (this.basicAuth!=undefined)
+			headers["Authorization"]="Basic "+this.basicAuth.authdata;
+		
 		return {
 			method: method,
 			url: url,
@@ -161,6 +182,7 @@ function ADO_oData_factory($http,ServiceRoot){
 				"Content-Type": "application/json", 
 				Accept: "application/json;odata=fullmetadata"
 			},
+			headers:headers,
 			data: data,
 			__factory:this,
 			__table:table
@@ -368,6 +390,16 @@ function ADO_rest_factory($http,ServiceRoot){
 	this.ServiceRoot=ServiceRoot;
 	this.$http=$http;
 
+	this.basicAuth=undefined;
+	
+	this.setBasicAuth=function(login,password){
+		this.basicAuth={
+			login:login,
+			password:password,
+			authdata:base64_encode(login + ':' + password)
+		}	
+	}
+	
 	/**
 	(internal) Register a new object
 	*/
@@ -408,7 +440,7 @@ function ADO_rest_factory($http,ServiceRoot){
 	/**
 	(internal) Prepare request with method, url and data
 	*/
-	this._prepareRequest=function(url,method,data,table){
+	this._prepareRequest=function(url,method,data,table,query){
 		data = data || null;
 
 		return {
@@ -420,16 +452,21 @@ function ADO_rest_factory($http,ServiceRoot){
 			},
 			data: data,
 			__factory:this,
-			__table:table
+			__table:table,
+			__query:query,
 		}
 	}
 	
 	/**
 	(internal) execute operation	
 	*/
-	this._op=function(url,method,successCallback,errorCallback,dataIn,table){
-		var req=this._prepareRequest(url,method,dataIn,table);
-
+	this._op=function(url,opConfig,method,table){
+		var url=url+this._prepareQueryFromOptions(opConfig.query);
+		var req=this._prepareRequest(url,method,opConfig.data,table,opConfig.query);
+		
+		var successCallback=opConfig.success || function(data){console.info("success without handle")}
+		var errorCallback=opConfig.error;
+		
 		this.$http(req).success(function(data,status,headers,config){
 			
 			if (data.value!=undefined)
@@ -438,12 +475,17 @@ function ADO_rest_factory($http,ServiceRoot){
 			if (data instanceof Array){
 				result=[];
 				for(i in data)
-					result.push(new ADO_ObjectPrototype(data[i],config.__factory,config.__table));
+					result.push(new ADO_ObjectPrototype(data[i],config.__factory,config.__table,config.__query));
 				
-				successCallback(new ADO_Collection(result,config.__factory,config.__table));
+				successCallback(new ADO_Collection(result,config.__factory,config.__table,config.__query));
 			}
 			else{
-				successCallback(new ADO_ObjectPrototype(data,config.__factory,config.__table));	
+				if (opConfig.object!=undefined){
+					opConfig.object.$factory.prepareObject(opConfig.object,data);
+					successCallback(opConfig.object);	
+				}
+				else
+					successCallback(new ADO_ObjectPrototype(data,config.__factory,config.__table,config.__query));	
 			}
 			
 		}).error(function(data, status, headers, config){
@@ -457,7 +499,7 @@ function ADO_rest_factory($http,ServiceRoot){
 	*/
 	this.get=function(ObjectName,id,config){
 		config = config || {}
-		this._op(this.ServiceRoot+ObjectName+"/"+id+this._prepareQueryFromOptions(config.query), "GET", config.success, config.error, null, ObjectName);
+		this._op(this.ServiceRoot+ObjectName+"/"+id, config, "GET", ObjectName);
 	}
 	
 	/**
@@ -465,14 +507,14 @@ function ADO_rest_factory($http,ServiceRoot){
 	*/
 	this.query=function(ObjectName,config){
 		config = config || {}
-		this._op(this.ServiceRoot+ObjectName+this._prepareQueryFromOptions(config.query), "GET", config.success, config.error, null, ObjectName);	
+		this._op(this.ServiceRoot+ObjectName, config, "GET", ObjectName);	
 	}
 	
 	/**
 	Create a new object
 	*/
 	this.create=function(ObjectName,config){
-		this._op(this.ServiceRoot+ObjectName+this._prepareQueryFromOptions(config.query), "POST", config.success, config.error,config.data, ObjectName);	
+		this._op(this.ServiceRoot+ObjectName, config, "POST", ObjectName);	
 	}
 	
 	/**
@@ -522,19 +564,26 @@ function ADO_rest_factory($http,ServiceRoot){
 			}
 		}
 		
-		object.$special.link=object.$special.table+"/"+ object.$special.id;
+		if (object.$special.table!=undefined)
+			object.$special.link=object.$special.table+"/"+ object.$special.id;
+		else
+			if (object.$special.__table!=undefined)
+				object.$special.link=object.$special.__table+"/"+ object.$special.id;
 		
-		Object.defineProperty(object, "id", {
-	       get: function() { return object.$special.id; }
-	    });
+		if (!ADO_hasProperty(object,"id"))
+			Object.defineProperty(object, "id", {
+		       get: function() { return object.$special.id; }
+		    });
 	    
-		Object.defineProperty(object, "Id", {
-	       get: function() { return object.$special.id; }
-	    });
+	    if (!ADO_hasProperty(object,"Id"))
+			Object.defineProperty(object, "Id", {
+		       get: function() { return object.$special.id; }
+		    });
 	    
-		Object.defineProperty(object, "$id", {
-	       get: function() { return object.$special.link; }
-	    });
+	    if (!ADO_hasProperty(object,"$id"))
+			Object.defineProperty(object, "$id", {
+		       get: function() { return object.$special.link; }
+		    });
 		
 		object.$factory.registry_add(object);
 	}
@@ -557,7 +606,7 @@ function ADO_rest_factory($http,ServiceRoot){
 			
 			var req = {
 				method: 'PUT',
-				url: object.$special["link"],
+				url: this.ServiceRoot+object.$special["link"],
 				headers: {
 					"Content-Type": "application/json", 
 					Accept: "application/json"
@@ -586,19 +635,24 @@ function ADO_rest_factory($http,ServiceRoot){
 		
 		var req = {
 				method: 'DELETE',
-			url: object.$special["link"],
+			url: this.ServiceRoot+object.$special["link"],
 			headers: {
 				"Content-Type": "application/json", 
 				Accept: "application/json"
-			},
-			data: data,
+			}
 		}
 				
 		object.$factory.$http(req).success(config.success).error(config.error);
 	}
 	
 	this.refreshObject=function(object,config){
+
 		//TODO
+		config = config || {}
+		config.object=object;
+		config.query=object.$special.query;
+		
+		this._op(this.ServiceRoot+object.$special.link, config, "GET", object.$special.table);
 	}
 }
 
