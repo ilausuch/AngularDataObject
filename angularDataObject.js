@@ -442,14 +442,19 @@ function ADO_rest_factory($http,ServiceRoot){
 	*/
 	this._prepareRequest=function(url,method,data,table,query){
 		data = data || null;
-
+		
+		var headers={
+				"Content-Type": "application/json", 
+				Accept: "application/json"
+		};
+		
+		if (this.basicAuth!=undefined)
+			headers["Authorization"]="Basic "+this.basicAuth.authdata;
+			
 		return {
 			method: method,
 			url: url,
-			headers: {
-				"Content-Type": "application/json", 
-				Accept: "application/json;"
-			},
+			headers: headers,
 			data: data,
 			__factory:this,
 			__table:table,
@@ -604,13 +609,18 @@ function ADO_rest_factory($http,ServiceRoot){
 					data[i]=object.$data[i];
 			}
 			
+			var headers={
+				"Content-Type": "application/json", 
+				Accept: "application/json"
+			};
+			
+			if (this.basicAuth!=undefined)
+				headers["Authorization"]="Basic "+this.basicAuth.authdata;
+			
 			var req = {
 				method: 'PUT',
 				url: this.ServiceRoot+object.$special["link"],
-				headers: {
-					"Content-Type": "application/json", 
-					Accept: "application/json"
-				},
+				headers: headers,
 				data: data,
 			}
 					
@@ -633,13 +643,18 @@ function ADO_rest_factory($http,ServiceRoot){
 		config.success = config.success || function(data){};
 		config.error = config.error || function(err){console.debug("Error",err)};
 		
+		var headers={
+			"Content-Type": "application/json", 
+			Accept: "application/json"
+		};
+		
+		if (this.basicAuth!=undefined)
+			headers["Authorization"]="Basic "+this.basicAuth.authdata;
+			
 		var req = {
 				method: 'DELETE',
 			url: this.ServiceRoot+object.$special["link"],
-			headers: {
-				"Content-Type": "application/json", 
-				Accept: "application/json"
-			}
+			headers: headers
 		}
 				
 		object.$factory.$http(req).success(config.success).error(config.error);
