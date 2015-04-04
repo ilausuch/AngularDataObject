@@ -205,7 +205,7 @@ function ADO_oData_factory($http,ServiceRoot){
 				for(i in data)
 					result.push(new ADO_ObjectPrototype(data[i],config.__factory,config.__table));
 				
-				successCallback(new ADO_Collection(result,config.__factory,config.__table));
+				successCallback(result);
 			}
 			else{
 				successCallback(new ADO_ObjectPrototype(data,config.__factory,config.__table));	
@@ -230,7 +230,11 @@ function ADO_oData_factory($http,ServiceRoot){
 	*/
 	this.query=function(ObjectName,config){
 		config = config || {}
-		this._op(this.ServiceRoot+ObjectName+this._prepareQueryFromOptions(config.query), "GET", config.success, config.error, null, ObjectName);	
+		if (config.useCollection!=undefined || config.useCollection){
+			this._op(this.ServiceRoot+ObjectName+this._prepareQueryFromOptions(config.query), "GET", function(data){new ADO_Collection(data,config.__factory,config.__table)}, config.error, null, ObjectName);
+		}
+		else
+			this._op(this.ServiceRoot+ObjectName+this._prepareQueryFromOptions(config.query), "GET", config.success, config.error, null, ObjectName);	
 	}
 	
 	/**
@@ -508,11 +512,27 @@ function ADO_rest_factory($http,ServiceRoot){
 	}
 	
 	/**
+	Get one object with condition of forening key
+	*/
+	this.getCond=function(ObjectName,id,key,value,config){
+		config = config || {}
+		this._op(this.ServiceRoot+ObjectName+"/"+id+"/"+key+"/"+value, config, "GET", ObjectName);
+	}
+	
+	/**
 	Get multiple elements	
 	*/
 	this.query=function(ObjectName,config){
 		config = config || {}
 		this._op(this.ServiceRoot+ObjectName, config, "GET", ObjectName);	
+	}
+	
+	/**
+	Get multiple elements with condition of foreing key	
+	*/
+	this.queryCond=function(ObjectName,key,value,config){
+		config = config || {}
+		this._op(this.ServiceRoot+ObjectName+"/"+key+"/"+value, config, "GET", ObjectName);	
 	}
 	
 	/**
