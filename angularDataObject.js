@@ -89,6 +89,11 @@ function ADO_ObjectPrototype(data,factory,table,query){
 	this.refresh=function(config){
 		this.$factory.refreshObject(this,config);
 	}
+	
+	this.resetChanges=function(){
+		this.$changes={};
+		this.$hasChanges=false;
+	}
 };
 
 //--------------------------------------------------------------------------------
