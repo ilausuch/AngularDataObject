@@ -94,6 +94,14 @@ function ADO_ObjectPrototype(data,factory,table,query){
 		this.$changes={};
 		this.$hasChanges=false;
 	}
+	
+	this.convertToInt=function(field){
+		this.$data[field]=parseInt(this.$data[field]);
+	}
+	
+	this.convertToDecimal=function(field){
+		this.$data[field]=parseFloat(this.$data[field]);
+	}
 };
 
 //--------------------------------------------------------------------------------
