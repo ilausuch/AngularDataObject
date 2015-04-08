@@ -475,7 +475,7 @@ function ADO_rest_factory($http,ServiceRoot){
 			data: data,
 			__factory:this,
 			__table:table,
-			__query:query,
+			__query:query
 		}
 	}
 	
@@ -493,6 +493,9 @@ function ADO_rest_factory($http,ServiceRoot){
 			
 			if (data.value!=undefined)
 		    	data=data.value;
+			
+		   	if (data.success!=undefined)
+		   		successCallback(data); 	
 		   
 			if (data instanceof Array){
 				result=[];
