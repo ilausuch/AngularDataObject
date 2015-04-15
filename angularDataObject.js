@@ -115,7 +115,7 @@ function ADO_Collection(data,factory){
 		//TODO
 	}
 	
-	this.update=function(){
+	this.save=function(){
 		//TODO		
 	}
 	
@@ -260,9 +260,9 @@ function ADO_oData_factory($http,ServiceRoot){
 	/**
 	Update all elements in registry
 	*/
-	this.update=function(){
+	this.save=function(){
 		for (k in this._registry)
-			this._registry[k].update();
+			this._registry[k].save();
 	}
 	
 	/**
@@ -361,10 +361,10 @@ function ADO_oData_factory($http,ServiceRoot){
 		
 		for (k in object.$references_list)
 			for (k2 in object.$data[object.$references_list[k]])
-				object.$data[object.$references_list[k]][k2].update();
+				object.$data[object.$references_list[k]][k2].save();
 				
 		for (k in object.$references_object)
-			object.$data[object.$references_object[k]].update();
+			object.$data[object.$references_object[k]].save();
 	}
 	
 	/**
@@ -467,7 +467,7 @@ function ADO_rest_factory($http,ServiceRoot){
 		
 		if (this.basicAuth!=undefined)
 			headers["Authorization"]="Basic "+this.basicAuth.authdata;
-			
+		
 		return {
 			method: method,
 			url: url,
@@ -561,9 +561,9 @@ function ADO_rest_factory($http,ServiceRoot){
 	/**
 	Update all elements in registry
 	*/
-	this.update=function(){
+	this.save=function(){
 		for (k in this._registry)
-			this._registry[k].update();
+			this._registry[k].save();
 	}
 	
 	/**
@@ -665,10 +665,10 @@ function ADO_rest_factory($http,ServiceRoot){
 		
 		for (k in object.$references_list)
 			for (k2 in object.$data[object.$references_list[k]])
-				object.$data[object.$references_list[k]][k2].update();
+				object.$data[object.$references_list[k]][k2].save();
 				
 		for (k in object.$references_object)
-			object.$data[object.$references_object[k]].update();
+			object.$data[object.$references_object[k]].save();
 	}
 	
 	/**
