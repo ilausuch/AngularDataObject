@@ -102,10 +102,72 @@ this.api.get("Product",{
 In case you are using modified ArrestDB you can use extended configurations.
 
 #Objects
+
 ##Save
+Save changes
+```javascript
+	o.save({
+		success:function(){
+			
+		}
+	});
+```
+
+
 ##Delete
-##Collections
+Delete current object
+```javascript
+	o.delete();
+```
+
+##Refresh
+Reload information from DB.
+```javascript
+	o.refresh({
+		success:function(){
+			
+		}
+	});
+```
+
+##Reset changes
+Remove all changes list
+```javascript
+	o.resetChanges();
+```
+
+##Conversions
+Convert a field to int or decimal without generate changes. This is useful when a field is required to be in a number format. If you modify a field always generate a entry in change registry, so, this solve this problem.
+
+Usage:
+```javascript
+	object.convertToInt(field)
+	object.convertToDecimal(field)
+```
+
+Exemple
+```javascript
+	product.convertToInt('max');
+	product.convertToDecimal('price');
+```
+
+##Complete references to other objects
+Complete object with references to other objects using factory registry.
+
+Usage:
+```javascript
+object.comple(field,field_id,table)
+```
+
+Exemple:
+```javascript
+	product.complete("provider","provider_id","Provider");
+```
+
 ##Special info
+
+
+#Collections
 
 #Changelog
 

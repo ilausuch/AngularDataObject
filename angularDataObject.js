@@ -86,21 +86,40 @@ function ADO_ObjectPrototype(data,factory,table,query){
 		this.$factory.deleteObject(this,config);
 	}
 	
+	/**
+	Reload from DB	
+	*/
 	this.refresh=function(config){
 		this.$factory.refreshObject(this,config);
 	}
 	
+	/**
+	Remove all changes list
+	*/
 	this.resetChanges=function(){
 		this.$changes={};
 		this.$hasChanges=false;
 	}
 	
+	/**
+	Convert a field to int without generate changes	
+	*/
 	this.convertToInt=function(field){
 		this.$data[field]=parseInt(this.$data[field]);
 	}
 	
+	/**
+	Convert a field to decimal without generate changes	
+	*/
 	this.convertToDecimal=function(field){
 		this.$data[field]=parseFloat(this.$data[field]);
+	}
+	
+	/**
+	Complete object using references to other objects
+	*/
+	this.complete=function(field,field_id,table){
+		this[field]=this.$factory.registry_get(table,this[field_id]);
 	}
 };
 
@@ -701,7 +720,7 @@ function ADO_rest_factory($http,ServiceRoot){
 		//TODO
 		config = config || {}
 		config.object=object;
-		config.query=object.$special.query;
+		config.query=config.query || object.$special.query;
 		
 		this._op(this.ServiceRoot+object.$special.link, config, "GET", object.$special.table);
 	}
