@@ -119,10 +119,17 @@ function ADO_ObjectPrototype(data,factory,table,query){
 	}
 	
 	/**
+	Convert a field to date without generate changes	
+	*/
+	this.convertToDate=function(field,format){
+		this.$data[field]=moment(this.$data[field],format);
+	}
+	
+	/**
 	Convert a field to date from mysql without generate changes	
 	*/
-	this.convertToDate=function(field){
-		this.$data[field]=moment(this.$data[field]);
+	this.convertToDateMysql=function(field){
+		this.$data[field]=moment.utc(this.$data[field],"YYYY-MM-DD");
 	}
 	
 	/**
