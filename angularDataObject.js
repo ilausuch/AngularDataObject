@@ -4,6 +4,9 @@
 *
 * AngularDataObject ALPHA 1 (github.com/ilausuch/AngularDataObject/)
 * Copyright (c) 2015 Ivan Lausuch <ilausuch@gmail.com>
+*
+* Requires moment.js
+* //cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.2/moment.min.js
 **/
 
 function ADO_hasProperty(obj,name){
@@ -113,6 +116,13 @@ function ADO_ObjectPrototype(data,factory,table,query){
 	*/
 	this.convertToDecimal=function(field){
 		this.$data[field]=parseFloat(this.$data[field]);
+	}
+	
+	/**
+	Convert a field to date from mysql without generate changes	
+	*/
+	this.convertToDate=function(field){
+		this.$data[field]=moment(this.$data[field]);
 	}
 	
 	/**
@@ -226,7 +236,7 @@ function ADO_oData_factory($http,ServiceRoot){
 	*/
 	this._op=function(url,method,successCallback,errorCallback,dataIn,table){
 		var req=this._prepareRequest(url,method,dataIn,table);
-		
+		console.debug(req);
 		this.$http(req).success(function(data,status,headers,config){
 			
 			if (data.value!=undefined)
