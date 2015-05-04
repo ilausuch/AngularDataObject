@@ -204,7 +204,7 @@ function ADO_oData_factory($http,ServiceRoot){
 		if (options!=undefined){
 			query="?";
 			for (var key in options) 
-				query=query+"$"+key+"="+options[key]+"&";
+				query=query+key+"="+options[key]+"&";
 		}
 				
 		return query;
