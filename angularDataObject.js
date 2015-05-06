@@ -529,24 +529,34 @@ function ADO_rest_factory($http,ServiceRoot){
 			
 			if (data.value!=undefined)
 		    	data=data.value;
-			
+		    	
+			/*
 		   	if (data.success!=undefined)
 		   		successCallback(data); 	
-		   
-			if (data instanceof Array){
-				result=[];
-				for(i in data)
-					result.push(new ADO_ObjectPrototype(data[i],config.__factory,config.__table,config.__query));
-				
-				successCallback(new ADO_Collection(result,config.__factory,config.__table,config.__query));
-			}
-			else{
-				if (opConfig.object!=undefined){
-					opConfig.object.$factory.prepareObject(opConfig.object,data);
-					successCallback(opConfig.object);	
+		   	*/
+		   	
+		   	if (method=="POST"){
+			   	if (data.success!=undefined && data.success.Ids!=undefined )
+			   		data.success.Ids=data.success.Ids.split(",");
+			   		
+			   	successCallback(data);
+		   	}
+		   	else{
+				if (data instanceof Array){
+					result=[];
+					for(i in data)
+						result.push(new ADO_ObjectPrototype(data[i],config.__factory,config.__table,config.__query));
+					
+					successCallback(new ADO_Collection(result,config.__factory,config.__table,config.__query));
 				}
-				else
-					successCallback(new ADO_ObjectPrototype(data,config.__factory,config.__table,config.__query));	
+				else{
+					if (opConfig.object!=undefined){
+						opConfig.object.$factory.prepareObject(opConfig.object,data);
+						successCallback(opConfig.object);	
+					}
+					else
+						successCallback(new ADO_ObjectPrototype(data,config.__factory,config.__table,config.__query));	
+				}
 			}
 			
 		}).error(function(data, status, headers, config){
