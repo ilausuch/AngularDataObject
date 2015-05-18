@@ -751,5 +751,12 @@ function ADO_rest_factory($http,ServiceRoot){
 		
 		this._op(this.ServiceRoot+object.$special.link, config, "GET", object.$special.table);
 	}
+	
+	this.call=function(object,config){
+		config = config || {}
+		config.object=object;
+		
+		this._op(this.ServiceRoot+object+"()", config, "POST", object);
+	}
 }
 
