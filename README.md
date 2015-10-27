@@ -28,9 +28,10 @@ In this example, Product is get, decreased its quantity and update.
 
 #Factory
 
-There are two factories:
+There are tree factories:
 - ADO_oData_factory : Use in case of oData factory
 - ADO_rest_factory : Use in case of restful api. It's full compatible with [ArrestDB API with ilausuch extensions] (https://github.com/ilausuch/ArrestDB/)
+- ADO_wcf_factory : Usage in case de WCF Data Objects
 
 ##Constructor operation
 

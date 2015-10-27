@@ -1,7 +1,13 @@
-
-//--------------------------------------------------------------------------------
-// OData Factory
-//--------------------------------------------------------------------------------
+/**
+* The MIT License
+* http://creativecommons.org/licenses/MIT/
+*
+* ADO ODATA factory 0.9 (github.com/ilausuch/AngularDataObject/)
+* Copyright (c) 2015 Ivan Lausuch <ilausuch@gmail.com>
+*
+* Requires moment.js
+* //cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.2/moment.min.js
+**/
 function ADO_oData_factory($http,ServiceRoot){
 	this.ignoreFields=["$$hashKey", "Created@odata.type", "CreatedBy", "Modified@odata.type", "ModifiedBy", "RowVersion", "RowVersion@odata.type"];
 	this.specialFields=["Created", "Modified", "odata.etag", "odata.id", "odata.type","Id","odata.editLink"];
@@ -258,7 +264,6 @@ function ADO_oData_factory($http,ServiceRoot){
 				Accept: "application/json;odata=fullmetadata",
 				"If-Match" : object.$special["odata.etag"]
 			},
-			data: data,
 		}
 				
 		object.$factory.$http(req).success(config.success).error(config.error);
